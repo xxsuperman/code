@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+		
+		<!--用注解 -->
+	<context:annotation-config />
+	<context:component-scan base-package="com.zs" />
+
+	<!--引入配置文件 -->
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<!--引入log4j.properties -->
+				<value>classpath:log4j.properties</value>
+				<!--引入jdbc.properties-->
+				<value>classpath:jdbc.properties</value>
+		
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- 配数据库连接池 c3p0 -->
+
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<!--读取配置文件的值 ${key} -->
+		<property name="driverClass" value="${driverClass}" />
+		<property name="jdbcUrl" value="${jdbcUrl}" />
+		<property name="user" value="${user}" />
+		<property name="password" value="${password}" />
+	</bean>
+
+	<!--mybaits -->
+	<!--Mybatis操作数据库 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!--连数据库 -->
+		<property name="dataSource" ref="dataSource" />
+		<!--xml位置 -->
+		<property name="mapperLocations" value="classpath:com/zs/pms/dao/*.xml" />
+		<!--包别名 -->
+		<property name="typeAliasesPackage" value="com.zs.pms.po,com.zs.pms.vo" />
+	</bean>
+
+	<!-- 扫包 扫xml -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!--DAO接口-->
+		<property name="basePackage" value="com.zs.pms.dao" />
+	</bean>
+	<!--事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+	</bean>
+
+	<!--开启事务注解 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	<!--声明式aop -->
+
+</beans>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--与dao接口建立联系-->
+<mapper namespace="com.zs.pms.dao.UserDao">
+	<select id="queryByUid" resultType="com.zs.pms.po.Tpermission"  parameterType="int">
+		select * from tpermission where id in(
+		select pid from trolepermission where rid in(
+		select rid from tuserrole where usid=#{id}))
+		
+	</select>
+	<!--sql片段  -->
+	<sql id="where">
+		<where>
+				<if test="loginname!=null and loginname!=''">
+					and loginname=#{loginname}
+				</if>
+				<if test="password!=null and password!=''">
+					and password=#{password}
+				</if>
+			</where>
+	</sql>
+	
+	<sql id="selector">
+		select * from tuser
+	</sql>
+	
+	<sql id="order">
+		order by id desc
+	</sql>
+	
+	<sql id="page">
+		<where>
+			b.rn&gt;=#{start} and b.rn&lt;=#{end}		
+		</where>
+	</sql>
+	
+	<select id="queryByPage" parameterType="com.zs.pms.vo.QueryUser" resultType="com.zs.pms.po.Tuser">
+		select b.* from (select rownum rn,a.* from(
+		<include refid="selector"/>
+		<include refid="where"/>
+		<include refid="order"/>
+		)a)b
+		<include refid="page"></include>
+	</select>
+	
+	
+	
+	<select id="queryByCon" parameterType="com.zs.pms.vo.QueryUser" resultType="com.zs.pms.po.Tuser">
+			select * from tuser
+			<!-- 引入sql片段 -->
+			<include refid="where"/>
+	</select>
+	
+	<select id="queryCount" parameterType="com.zs.pms.vo.QueryUser" resultType="int">
+		select count(1) from tuser
+		<include refid="where"/>
+	
+	</select>
+	
+	
+	<delete id="deleteByIds">
+		delete from tuser where id in 
+		<!-- 
+		collection 参数类型
+		item 数组中每项的临时变量名
+		separator 每项用什么分割
+		open 起始
+		close 结束
+		 -->
+		<foreach collection="array" item="id" separator="," open="(" close=")">
+			#{id}
+		</foreach>
+	</delete>
+	<delete id="deleteById" parameterType="int">
+	  delete from tuser where id =#{id}
+	</delete>
+	
+	<update id="updateUser" parameterType="com.zs.pms.po.Tuser">
+		update tuser
+		<set>
+			<if test="loginname!=null and loginname!=''">
+				loginname=#{loginname}
+			</if>
+			
+			<if test="password!=null and password!=''">
+				password=#{password}
+			</if>
+			
+			<if test="sex!=null and sex!=''">
+				sex=#{sex}
+			</if>
+			
+			<if test="birthday!=null ">
+				birthday=#{birthday}
+			</if>
+			
+			<if test="email!=null and email!=''">
+				email=#{email}
+			</if>
+			
+			<if test="dept!=null ">
+				dept=#{dept.id}
+			</if>
+			
+			<if test="realname!=null and realname!=''">
+				realname=#{realname}
+			</if>
+			
+			<if test="updator!=0">
+				updator=#{updator}
+			</if>
+			
+			<if test="pic!=null and pic!=''">
+				pic=#{pic}
+			</if>
+			
+			<if test="isenable!=0">
+				isenable=#{isenable}
+			</if>
+			updatime=sysdate
+	
+	
+		</set>
+		where id=#{id}
+	</update>
+	
+	
+	<insert id="insertUser" parameterType="com.zs.pms.po.Tuser">
+		<selectKey keyProperty="id" order="BEFORE" resultType="int">
+			select SEQ_TUSER.nextval from dual
+		</selectKey>
+		insert into tuser(id,loginname,password,sex,birthday,email,dept,realname,creator,creatime,isenable,pic)
+		values(#{id},#{loginname},#{password},#{sex},#{birthday},#{email},#{dept.id},#{realname},#{creator},sysdate,#{isenable},#{pic})
+	
+		
+	</insert>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>
